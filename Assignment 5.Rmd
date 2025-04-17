@@ -1,0 +1,101 @@
+---
+title: "coding5"
+author: "rachel"
+date: "2025-02-28"
+output: html_document
+---
+```{r}
+library(ggplot2)
+library(nycflights13)
+library(dplyr)
+library(tidyr)
+library(tibble)
+```
+
+##1 Use the dataset “mtcars”, create a bar plot showing the count of cars for each cylinders category (cyl). fill the bars with skyblue color, and add a black outline around each bar.
+```{r}
+ggplot(mtcars, aes(x = factor(cyl))) + 
+  geom_bar(fill = "skyblue", color = "black")
+```
+
+##2 Use the dataset “iris”, plot a histogram of the variable “Sepal.Length”, and set the number of bins to 20, fill the bars with pink color, and add a black outline around each bar.
+```{r}
+ggplot(iris, aes(x = Sepal.Length)) + 
+  geom_histogram(bins = 20, fill = "pink", color = "black")
+```
+
+##3 Use the dataset “mtcars”, use group_by() to group the data by gear and cyl, then find the mean mpg value for each group using summarize(). Remember to remove the missing values.
+```{r}
+mean_mpg_by_group <- mtcars %>%
+  group_by(gear, cyl) %>%
+  summarise(mean_mpg = mean(mpg, na.rm = TRUE))
+mean_mpg_by_group
+```
+
+##4 Use the dataset “airquality”, gather “Ozone”, “Solar.R”, “Wind”, and “Temp” into two colums: “variable” (the original column name) and “value” (the corresponding value) using pivot_longer(). Save and name this dataset as “airquality_long”. Then use the head() to show its first 6 rows.
+```{r}
+airquality_long <- airquality %>%
+  pivot_longer(cols = c(Ozone, Solar.R, Wind, Temp), 
+               names_to = "variable", 
+               values_to = "value")
+head(airquality_long)
+```
+
+##5 Use pivot_wider() to restitute the dataset “airquality_long” (get back to what the “airquality” looks like). Then use the head() to show the first 6 rows.
+```{r}
+airquality_long <- airquality %>%
+  pivot_longer(cols = c(Ozone, Solar.R, Wind, Temp), 
+               names_to = "variable", 
+               values_to = "value")
+airquality_wide <- airquality_long %>%
+  pivot_wider(names_from = variable, values_from = value)
+head(airquality_wide)
+```
+
+##6  Create a tibble named students with three columns: Name (character), Age (integer), and Score (numeric). Add 5 rows of data manually.
+```{r}
+students <- tibble(
+  Name = c("Alice", "Bob", "Charlie", "David", "Eva"),
+  Age = c(20, 21, 19, 22, 20),
+  Score = c(90, 92, 88, 93, 86)
+)
+students
+```
+
+##7 Use the dataset “mtcars”. [1] Select only the columns mpg, hp, wt, and cyl. [2] Filter the data to only include cars with mpg > 20. [3] Arrange the filtered data by hp in descending order. [4] Create a scatter plot of hp vs. wt, colored by cyl.
+```{r}
+selected_data <- mtcars %>% select(mpg, hp, wt, cyl)
+filtered_data <- selected_data %>% filter(mpg > 20)
+arranged_data <- filtered_data %>% arrange(desc(hp))
+ggplot(arranged_data, aes(x = wt, y = hp, color = factor(cyl))) +
+  geom_point(size = 3) 
+```
+
+##8 Use the dataset “starwawrs”. [1] Filter out characters with missing mass OR height. [2] Keep only characters whose mass is greater than 100 and height is greater than 200. [3] Arrange the result by height in descending order. [4] Create a bar plot where the x-axis represents the name of characters, and the y-axis represents their height, fill each bar with “orange” color. HINT: reorder() function can be used to order X by the average value of Y when you’re creating a bar plot. For example, if you want to order name by height, you may use aes(x = reorder(name, height), y = height).
+```{r}
+filtered_data <- starwars %>% filter(!is.na(mass) & !is.na(height))
+filtered_data <- filtered_data %>% filter(mass > 100 & height > 200)
+arranged_data <- filtered_data %>% arrange(desc(height))
+ggplot(arranged_data, aes(x = reorder(name, height), y = height)) +
+  geom_bar(stat = "identity", fill = "orange")
+```
+
+##9 Use the dataset “flights”. [1] Create a new column speed (miles per hour) calculated as distance / (air_time / 60). [2] Filter for flights that traveled over 2,000 miles and had a speed greater than 500 mph. [3] Select the columns carrier, flight, origin, dest, speed, and distance. [4] Create a scatter plot where the x-axis represents speed, and the y-axis represents distance. Use carrier for color.
+```{r}
+flights_with_speed <- flights %>% mutate(speed = distance / (air_time / 60))
+filtered_flights <- flights_with_speed %>% filter(distance > 2000 & speed > 500)
+selected_flights <- filtered_flights %>% select(carrier, flight, origin, dest, speed, distance)
+ggplot(selected_flights, aes(x = speed, y = distance, color = carrier)) +
+  geom_point(size = 3) 
+```
+
+##10 Use the dataset “diamonds”. [1] Group the dataset by cut. [2] Calculate the average price for each cut. [3] Arrange the results by average price in descending order. [4] Create a bar plot to visualize the average price for each cut and fill each cut bar different colors.
+```{r}
+average_price_by_cut <- diamonds %>% group_by(cut) %>%
+  summarize(average_price = mean(price, na.rm = TRUE)) %>%
+  arrange(average_price)
+average_price_by_cut$cut <- factor(average_price_by_cut$cut, 
+                                    levels = average_price_by_cut$cut)
+ggplot(average_price_by_cut, aes(x = cut, y = average_price, fill = cut)) +
+  geom_bar(stat = "identity")
+```
